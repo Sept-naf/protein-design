@@ -51,7 +51,7 @@ def get_metrics_from_json(base_path, target, description):
             summary_data = json.load(f)
             complex_iptm = summary_data["iptm"]
             complex_ptm = summary_data["ptm"]
-            monomer_ptm = summary_data["chain_ptm"][0]
+            monomer_ptm = summary_data["chain_ptm"][0] 
 
         residue_atoms = defaultdict(list)
         chain_ca = defaultdict(dict)
@@ -90,29 +90,26 @@ def get_metrics_from_json(base_path, target, description):
                                  if chain == "A" and res_id in interface_A]
             interface_B_indices = [i for i, (res_id, chain) in enumerate(zip(token_res_ids, token_chain_ids))
                                  if chain != "A" and res_id in interface_B]
-
             chain_A_indices = [i for i, chain in enumerate(token_chain_ids) if chain == "A"]
             chain_B_indices = [i for i, chain in enumerate(token_chain_ids) if chain != "A"]
-
-            ipae = np.mean(np.concatenate([
-                pae_matrix[np.ix_(interface_A_indices, interface_B_indices)].ravel(),
-                pae_matrix[np.ix_(interface_B_indices, interface_A_indices)].ravel()
-            ]))
-
-            monomer_pae = np.mean(pae_matrix[np.ix_(chain_A_indices, chain_A_indices)])
-
-            pae_interaction = np.mean(np.concatenate([
-                pae_matrix[np.ix_(chain_A_indices, chain_B_indices)].ravel(),
-                pae_matrix[np.ix_(chain_B_indices, chain_A_indices)].ravel()
-            ]))
-
-            complex_pae = np.mean(pae_matrix)
-
+            
             #ipae = np.mean([pae_matrix[np.ix_(interface_A_indices, interface_B_indices)], pae_matrix[np.ix_(interface_B_indices, interface_A_indices)]])
             #monomer_pae = np.mean(pae_matrix[np.ix_(chain_A_indices, chain_A_indices)])
             #pae_interaction = np.mean([pae_matrix[np.ix_(chain_A_indices, chain_B_indices)], pae_matrix[np.ix_(chain_B_indices, chain_A_indices)]])
             #complex_pae = np.mean(pae_matrix)
-            
+
+            ipae_1 = np.mean(pae_matrix[np.ix_(interface_A_indices, interface_B_indices)])
+            ipae_2 = np.mean(pae_matrix[np.ix_(interface_B_indices, interface_A_indices)])
+            ipae = (ipae_1 + ipae_2) / 2
+
+            monomer_pae = np.mean(pae_matrix[np.ix_(chain_A_indices, chain_A_indices)])
+
+            pae_interaction_1 = np.mean(pae_matrix[np.ix_(chain_A_indices, chain_B_indices)])
+            pae_interaction_2 = np.mean(pae_matrix[np.ix_(chain_B_indices, chain_A_indices)])
+            pae_interaction = (pae_interaction_1 + pae_interaction_2) / 2
+
+            complex_pae = np.mean(pae_matrix)
+
         return {
             "AF3Score_monomer_ca_plddt": monomer_ca_plddt,
             "AF3Score_monomer_pae": monomer_pae,
